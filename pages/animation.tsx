@@ -1,6 +1,7 @@
 import * as z from "zod";
 import Head from "next/head";
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo } from "react";
 import { useRouter } from "next/router";
 import { animationCallbackQueryType } from "../lib/annict";
@@ -45,7 +46,7 @@ export const Animation: React.FC = () => {
                 }}>
                     {recommendedImageUrl.length > 0 && (
                         <>
-                            <img src={recommendedImageUrl} />
+                            <Image src={recommendedImageUrl} alt={title} />
                             <br />
                         </>
                     )}
