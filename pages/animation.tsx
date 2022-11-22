@@ -30,7 +30,7 @@ export const Animation: React.FC = () => {
                     </div>
                 </main>
             </>
-        )
+        );
     }
 
     const { username, recommendedImageUrl, workId, title, wannaWatchCount } = animation;
@@ -53,6 +53,8 @@ export const Animation: React.FC = () => {
                     <Link href={`https://annict.com/@${username}`}>{username}</Link>が次に見るべきアニメは...
                     <br />
                     <Link href={`https://annict.com/works/${workId}`}>{title}</Link> (1/{wannaWatchCount})
+                    <br />
+                    <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${username}は${title}を見たほうが良い`)}&url=${encodeURIComponent(window.location.origin)}`}>Tweetする</Link>
                     <br />
                     <Link href='/'>top</Link>
                 </div>
