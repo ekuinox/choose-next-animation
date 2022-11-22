@@ -42,7 +42,6 @@ const getWannaWatchWorks = async (accessToken: string): Promise<WannaWatchRespon
         },
         body: JSON.stringify({ query: GET_WANNA_WATCH_WORKS_QUERY })
     }).then((r) => r.json());
-    console.log(json);
     const { username, annictId, wannaWatchCount, works: { nodes } } = json.data.viewer;
     return { username, annictId, wannaWatchCount, works: nodes };
 };
@@ -58,7 +57,6 @@ const getAccessToken = async (code: string) => {
         method: 'POST',
         body: form,
     }).then((r) => r.json());
-    console.log({ json });
     const { access_token: accessToken } = json;
     return accessToken;
 };
@@ -68,7 +66,6 @@ export const handler = async (
     res: NextApiResponse<void>
 ) => {
     const { code } = req.query;
-    console.log({ code });
     if (typeof code !== 'string' || code.length < 1) {
         res.status(500).send();
         return;
