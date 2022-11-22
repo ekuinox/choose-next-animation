@@ -3,6 +3,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 const GET_WANNA_WATCH_WORKS_QUERY = `
 {
     viewer {
+        username
+		annictId
+		wannaWatchCount
         works (state: WANNA_WATCH) {
             nodes {
                 annictId
@@ -23,7 +26,14 @@ interface Work {
     };
 }
 
-const getWannaWatchWorks = async (accessToken: string): Promise<Work[]> => {
+interface WannaWatchResponse {
+    username: string;
+    annictId: number;
+    wannaWatchCount: number;
+    works: Work[];
+}
+
+const getWannaWatchWorks = async (accessToken: string): Promise<WannaWatchResponse> => {
     const json = await fetch('https://api.annict.com/graphql', {
         method: 'POST',
         headers: {
@@ -33,7 +43,8 @@ const getWannaWatchWorks = async (accessToken: string): Promise<Work[]> => {
         body: JSON.stringify({ query: GET_WANNA_WATCH_WORKS_QUERY })
     }).then((r) => r.json());
     console.log(json);
-    return json.data.viewer.works.nodes;
+    const { username, annictId, wannaWatchCount, works: { nodes } } = json.data.viewer;
+    return { username, annictId, wannaWatchCount, works: nodes };
 };
 
 const getAccessToken = async (code: string) => {
@@ -63,10 +74,17 @@ export const handler = async (
         return;
     }
     const token = await getAccessToken(code);
-    const works = await getWannaWatchWorks(token);
-    console.log({ works });
-    console.log({ works: works.length });
-    res.redirect('/').send();
+    const { works, username, annictId: userId, wannaWatchCount } = await getWannaWatchWorks(token);
+    const { title, annictId: workId, image: { recommendedImageUrl } } = works[Math.floor((Math.random() * works.length))];
+    const params = new URLSearchParams({
+        title,
+        workId: workId.toString(),
+        recommendedImageUrl,
+        userId: userId.toString(),
+        username,
+        wannaWatchCount: wannaWatchCount.toString(),
+    });
+    res.redirect(`/animation?${params.toString()}`).send();
 };
 
 export default handler;
