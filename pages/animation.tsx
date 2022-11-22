@@ -1,13 +1,29 @@
+import * as z from "zod";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
+import { animationCallbackQueryType } from "../lib/annict";
+
 
 export default function Animation() {
     const { query } = useRouter();
-    const { title, workId, recommendedImageUrl, username, wannaWatchCount } = query;
-    if (typeof title !== 'string' || typeof workId !== 'string' || typeof recommendedImageUrl !== 'string' || typeof username !== 'string' || typeof wannaWatchCount !== 'string') {
+    const animation: z.infer<typeof animationCallbackQueryType> | null = useMemo(() => {
+        const animation = animationCallbackQueryType.safeParse(query);
+        if (animation.success) {
+            return animation.data;
+        }
+        return null;
+    }, [query]);
+
+    if (animation == null) {
         return (
-            <>だめ～</>
-        );
+            <div>
+                <a href='/'>back</a>
+            </div>
+        )
     }
+
+    const { username, recommendedImageUrl, workId, title, wannaWatchCount } = animation;
+
     return (
         <div>
             <a href={`https://annict.com/@${username}`}>{username}</a>さんが次に見るべきアニメは...
