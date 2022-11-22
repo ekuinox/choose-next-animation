@@ -90,11 +90,11 @@ interface WannaWatchResponse {
  * @param callbackUrl
  * @returns
  */
-export const buildAuthUrl = (clientId: string, callbackUrl: string): string => {
+export const buildAuthUrl = (): string => {
     const params = new URLSearchParams();
-    params.append("client_id", clientId);
+    params.append("client_id", process.env.ANNICT_CLIENT_ID);
     params.append("response_type", "code");
-    params.append("redirect_uri", callbackUrl);
+    params.append("redirect_uri", process.env.ANNICT_REDIRECT_URL);
     params.append("scope", "read");
     return `https://annict.com/oauth/authorize?${params.toString()}`;
 };

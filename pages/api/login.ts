@@ -5,5 +5,5 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<void>
 ) {
-  res.redirect(buildAuthUrl(process.env.ANNICT_CLIENT_ID, process.env.ANNICT_REDIRECT_URL));
+  res.redirect(buildAuthUrl());
 }
