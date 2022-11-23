@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { encryptAccessToken } from '../../lib';
-import { animationCallbackQueryType, exchangeCode } from '../../lib/annict';
+import { loginCallbackQueryType, exchangeCode, getLoginedUsername } from '../../lib/annict';
 
 export const handler = async (
     req: NextApiRequest,
@@ -13,12 +13,14 @@ export const handler = async (
         return;
     }
     const token = await exchangeCode(code);
+    const username = await getLoginedUsername(token);
 
-    const resp: z.infer<typeof animationCallbackQueryType> = {
+    const resp: z.infer<typeof loginCallbackQueryType> = {
         accessToken: encryptAccessToken(token),
+        username,
     };
     const params = new URLSearchParams(resp);
-    res.redirect(`/animation?${params.toString()}`).send();
+    res.redirect(`/?${params.toString()}`).send();
 
 };
 

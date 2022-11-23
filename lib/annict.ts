@@ -26,6 +26,16 @@ const getWannaWatchWorksQuery = `
 }`;
 
 /**
+ * ログインしているユーザのユーザ名を取得するクエリ
+ */
+const getLoginedUserQuery = `
+{
+    viewer {
+        username
+    }
+}`
+
+/**
  * graphqlでとれるアニメの構造
  */
 const workType = z.object({
@@ -37,7 +47,7 @@ const workType = z.object({
 });
 
 /**
- * graphqlのレスポンス
+ * 視聴したいアニメのgraphqlレスポンス
  */
 const wannaWatchWorksResponseType = z.object({
     data: z.object({
@@ -51,6 +61,17 @@ const wannaWatchWorksResponseType = z.object({
 });
 
 /**
+ * ログインしているユーザのgraphqlレスポンス
+ */
+const loginedUserResponseType = z.object({
+    data: z.object({
+        viewer: z.object({
+            username: z.string(),
+        }),
+    }),
+});
+
+/**
  * POST /oauth/token のレスポンス
  */
 const exchangeCodeResponseType = z.object({
@@ -58,10 +79,11 @@ const exchangeCodeResponseType = z.object({
 });
 
 /**
- * /animation に与えるクエリ
+ * / に与えるクエリ
  */
-export const animationCallbackQueryType = z.object({
+export const loginCallbackQueryType = z.object({
     accessToken: z.string(),
+    username: z.string(),
 });
 
 /**
@@ -161,6 +183,16 @@ export const getWannaWatchWorks = async (accessToken: string): Promise<WannaWatc
     const resp = await wannaWatchWorksResponseType.parseAsync(json);
     const { username, annictId, wannaWatchCount, works: { nodes } } = resp.data.viewer;
     return { username, annictId, wannaWatchCount, works: nodes };
+};
+
+/**
+ * ログインしているユーザのユーザ名を取得する
+ */
+export const getLoginedUsername = async (accessToken: string): Promise<string> => {
+    const json = await graphql(accessToken, getLoginedUserQuery);
+    const resp = await loginedUserResponseType.parseAsync(json);
+    const { username } = resp.data.viewer;
+    return username;
 };
 
 /**
