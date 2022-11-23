@@ -2,19 +2,41 @@ import * as z from "zod";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { animationCallbackQueryType } from "../lib/annict";
+import { animationCallbackQueryType, getRandomWorkResponse } from "../lib/annict";
+
+const getAnimation = async (token: string): Promise<z.infer<typeof getRandomWorkResponse> & { ok: true } | null> => {
+    try {
+        const resp = await fetch('/api/random', { headers: { authorization: token } });
+        const json = await resp.json();
+        const work = await getRandomWorkResponse.parseAsync(json);
+        if (work.ok) {
+            return work;
+        }
+        return null;
+    } catch (e: unknown) {
+        return null;
+    }
+
+};
 
 export const Animation: React.FC = () => {
     const { query } = useRouter();
-    const animation: z.infer<typeof animationCallbackQueryType> | null = useMemo(() => {
+    const token = useMemo(() => {
         const animation = animationCallbackQueryType.safeParse(query);
-        if (animation.success) {
-            return animation.data;
+        if (!animation.success) {
+            return null;
         }
-        return null;
+        return animation.data.accessToken;
     }, [query]);
+    const [animation, setAnimation] = useState<z.infer<typeof getRandomWorkResponse> & { ok: true } | null>(null);
+    useEffect(() => {
+        if (token == null) {
+            return;
+        }
+        getAnimation(token).then((animation) => setAnimation(animation));
+    }, [token]);
 
     if (animation == null) {
         return (

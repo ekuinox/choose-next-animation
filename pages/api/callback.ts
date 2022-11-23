@@ -1,6 +1,7 @@
 import * as z from 'zod';
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { animationCallbackQueryType, exchangeCode, getWannaWatchWorks, selectRandomWork } from '../../lib/annict';
+import { encryptAccessToken } from '../../lib';
+import { animationCallbackQueryType, exchangeCode } from '../../lib/annict';
 
 export const handler = async (
     req: NextApiRequest,
@@ -12,18 +13,13 @@ export const handler = async (
         return;
     }
     const token = await exchangeCode(code);
-    const { works, username, annictId: userId, wannaWatchCount } = await getWannaWatchWorks(token);
-    const { title, annictId: workId, image: { recommendedImageUrl } } = selectRandomWork(works);
+
     const resp: z.infer<typeof animationCallbackQueryType> = {
-        title,
-        workId: workId.toString(),
-        recommendedImageUrl,
-        userId: userId.toString(),
-        username,
-        wannaWatchCount: wannaWatchCount.toString(),
+        accessToken: encryptAccessToken(token),
     };
     const params = new URLSearchParams(resp);
     res.redirect(`/animation?${params.toString()}`).send();
+
 };
 
 export default handler;

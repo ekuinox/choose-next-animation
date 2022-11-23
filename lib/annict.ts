@@ -61,13 +61,26 @@ const exchangeCodeResponseType = z.object({
  * /animation に与えるクエリ
  */
 export const animationCallbackQueryType = z.object({
-    title: z.string(),
-    workId: z.string(),
-    recommendedImageUrl: z.string(),
-    userId: z.string(),
-    username: z.string(),
-    wannaWatchCount: z.string(),
+    accessToken: z.string(),
 });
+
+/**
+ * ランダムにアニメを1つ返すAPIのレスポンス
+ */
+export const getRandomWorkResponse = z.union([
+    z.object({
+        ok: z.literal(false),
+    }),
+    z.object({
+        ok: z.literal(true),
+        title: z.string(),
+        workId: z.number(),
+        recommendedImageUrl: z.string(),
+        userId: z.number(),
+        username: z.string(),
+        wannaWatchCount: z.number(),
+    }),
+]);
 
 interface Work {
     annictId: number;
