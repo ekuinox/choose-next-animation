@@ -59,7 +59,7 @@ const AnimationWithToken = ({ token }: { token: string }) => {
     const fetcher = useCallback(async () => {
         return await getAnimation(token);
     }, [token]);
-    const { data: animation, error } = useSWR('/api/animation', fetcher);
+    const { data: animation, error, mutate } = useSWR('/api/animation', fetcher);
 
     if (error != null || animation == null) {
         return (
@@ -69,7 +69,12 @@ const AnimationWithToken = ({ token }: { token: string }) => {
         );
     }
 
-    return <Animation {...animation} />
+    return (
+        <>
+            <Animation {...animation} />
+            <button onClick={() => mutate()}>refresh</button>
+        </>
+    );
 }
 
 export const AnimationWithNullableToken = ({ token }: { token: string | null }) => {
