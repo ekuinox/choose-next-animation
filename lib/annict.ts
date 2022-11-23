@@ -120,8 +120,13 @@ interface WannaWatchResponse {
 }
 
 const redirectUrl = () => {
-    const host = process.env.HOST ?? process.env.VERCEL_URL ?? '';
-    return `${host}/api/callback`;
+    if (process.env.VERCEL_URL != null) {
+        return `https://${process.env.VERCEL_URL}/api/callback`;
+    }
+    if (process.env.ORIGIN != null) {
+        return `${process.env.ORIGIN}/api/callback`;
+    }
+    throw "ORIGIN not provided";
 };
 
 /**
