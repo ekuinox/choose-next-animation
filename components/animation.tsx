@@ -1,9 +1,9 @@
-import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import { useCallback } from "react";
+import * as z from "zod";
 import useSWR from "swr";
-import { z } from "zod";
+import Link from "next/link";
+import { useCallback, useMemo } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { getRandomWorkResponse } from "../lib/annict";
 
 interface AnimationProps {
@@ -28,30 +28,40 @@ const getAnimation = async (token: string): Promise<z.infer<typeof getRandomWork
     }
 };
 
-export const Animation = ({ username, recommendedImageUrl, workId, title, wannaWatchCount }: AnimationProps) => {
+const buildIntentTweetUrl = (username: string, title: string) => {
+    const params = new URLSearchParams({
+        text: `${username}は${title}を見たほうが良い`,
+        url: window.location.origin,
+    });
+    return `https://twitter.com/intent/tweet?${params.toString()}`;
+};
+
+export const Animation = ({ username, recommendedImageUrl, workId, title }: AnimationProps) => {
+    const intentTweetUrl = useMemo(() => buildIntentTweetUrl(username, title), [username, title]);
     return (
-        <>
-            <Head>
-                <title>{username}は{title}を見たほうが良い</title>
-            </Head>
-            <main>
-                <div style={{
-                    textAlign: 'center'
-                }}>
-                    {recommendedImageUrl.length > 0 && (
-                        <>
-                            <img src={recommendedImageUrl} alt={title} />
-                            <br />
-                        </>
-                    )}
-                    <Link href={`https://annict.com/@${username}`}>{username}</Link>が次に見るべきアニメは...
-                    <br />
-                    <Link href={`https://annict.com/works/${workId}`}>{title}</Link> (1/{wannaWatchCount})
-                    <br />
-                    <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${username}は${title}を見たほうが良い`)}&url=${encodeURIComponent(window.location.origin)}`}>Tweetする</Link>
-                </div>
-            </main>
-        </>
+        <Box>
+            <Typography variant="h6">
+                次に見るアニメはこれ！
+            </Typography>
+            {recommendedImageUrl.length > 0 && (
+                <Box>
+                    <img src={recommendedImageUrl} alt={title} />
+                </Box>
+            ) || (
+                    <Typography variant="h4">
+                        {title}
+                    </Typography>
+                )}
+            <Typography>
+                <Link href={`https://annict.com/works/${workId}`}>anime(annict)</Link>
+                {" | "}
+                <Link href={`https://annict.com/${username}/wanna_watch`}>{username}(annict)</Link>
+                {" | "}
+                <Link href={intentTweetUrl}>
+                    ツイートする
+                </Link>
+            </Typography>
+        </Box>
     );
 };
 
@@ -59,29 +69,29 @@ const AnimationWithToken = ({ token }: { token: string }) => {
     const fetcher = useCallback(async () => {
         return await getAnimation(token);
     }, [token]);
-    const { data: animation, error, mutate } = useSWR('/api/animation', fetcher);
+    const { data: animation, error } = useSWR('/api/animation', fetcher);
 
     if (error != null || animation == null) {
         return (
-            <>
-                <p>たぶんロード中...</p>
-            </>
+            <Typography>
+                たぶんロード中...
+            </Typography>
         );
     }
 
     return (
-        <>
-            <Animation {...animation} />
-            <button onClick={() => mutate()}>refresh</button>
-        </>
+        <Animation {...animation} />
     );
-}
+};
 
 export const AnimationWithNullableToken = ({ token }: { token: string | null }) => {
     if (token == null) {
         return (
-            <p><Link href='/api/login'>ログイン</Link>してアニメを選ぶ
-            </p>
+            <Typography variant="h5">
+                <Link href='/api/login'>
+                    Annictでログイン
+                </Link>
+            </Typography>
         );
     }
     return <AnimationWithToken token={token} />

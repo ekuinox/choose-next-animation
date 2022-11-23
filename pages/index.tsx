@@ -1,15 +1,16 @@
 import path from "path";
 import Head from "next/head";
-import Link from "next/link";
 import { readFileSync } from "fs";
+import Card from "@mui/material/Card";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { loginCallbackQueryType } from "../lib/annict";
 import { AnimationWithNullableToken } from "../components/animation";
+import { ResponsiveAppBar } from "../components/appbar";
 
 const useTokenAndUsername = () => {
-  const { query } = useRouter();
+  const { query, push } = useRouter();
   const [state, setState] = useState<[string | null, string | null]>([null, null]);
   useEffect(() => {
     const data = loginCallbackQueryType.safeParse(query);
@@ -20,7 +21,8 @@ const useTokenAndUsername = () => {
     sessionStorage.setItem('accessToken', data.data.accessToken);
     sessionStorage.setItem('username', data.data.username);
     setState([data.data.accessToken, data.data.username]);
-  }, [query]);
+    push('/');
+  }, [query, push]);
   return state;
 };
 
@@ -43,27 +45,19 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
 
 export const Home: React.FC<HomeProps> = ({ repository, author }) => {
   const [token, _] = useTokenAndUsername();
-  const router = useRouter();
-  useEffect(() => {
-    if (token == null) {
-      return;
-    }
-    router.push('/');
-  }, [token]);
   return (
     <>
       <Head>
         <title>choose-next-animation</title>
       </Head>
       <main>
-        <div style={{
-          textAlign: 'center'
+        <ResponsiveAppBar repo={repository} />
+        <Card style={{
+          textAlign: 'center',
+          padding: '1em',
         }}>
           <AnimationWithNullableToken token={token} />
-          <div style={{ marginTop: '1vh' }}>
-            <Link href={repository}>Repository</Link> / <Link href={author.url}>{`${author.name} <${author.email}>`}</Link>
-          </div>
-        </div>
+        </Card>
       </main>
     </>
   );
