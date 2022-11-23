@@ -120,13 +120,15 @@ interface WannaWatchResponse {
 }
 
 const redirectUrl = () => {
-    if (process.env.VERCEL_URL != null) {
-        return `https://${process.env.VERCEL_URL}/api/callback`;
-    }
+    // 基本こっちを優先する
     if (process.env.ORIGIN != null) {
         return `${process.env.ORIGIN}/api/callback`;
     }
-    throw "ORIGIN not provided";
+    // for preview
+    if (process.env.VERCEL_URL != null) {
+        return `https://${process.env.VERCEL_URL}/api/callback`;
+    }
+    throw "ORIGIN and VERCEL_URL are not provided";
 };
 
 /**
