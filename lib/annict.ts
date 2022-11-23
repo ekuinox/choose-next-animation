@@ -119,17 +119,25 @@ interface WannaWatchResponse {
     works: Work[];
 }
 
+const redirectUrl = () => {
+    if (process.env.VERCEL_URL != null) {
+        return `https://${process.env.VERCEL_URL}/api/callback`;
+    }
+    if (process.env.ORIGIN != null) {
+        return `${process.env.ORIGIN}/api/callback`;
+    }
+    throw "ORIGIN not provided";
+};
+
 /**
  * アクセス許可ページのURLを作成する
- * @param clientId
- * @param callbackUrl
  * @returns
  */
 export const buildAuthUrl = (): string => {
     const params = new URLSearchParams();
     params.append("client_id", process.env.ANNICT_CLIENT_ID);
     params.append("response_type", "code");
-    params.append("redirect_uri", process.env.ANNICT_REDIRECT_URL);
+    params.append("redirect_uri", redirectUrl());
     params.append("scope", "read");
     return `https://annict.com/oauth/authorize?${params.toString()}`;
 };
@@ -144,7 +152,7 @@ export const exchangeCode = async (code: string): Promise<string> => {
     form.append("client_id", process.env.ANNICT_CLIENT_ID);
     form.append("client_secret", process.env.ANNICT_CLIENT_SECRET);
     form.append("grant_type", "authorization_code");
-    form.append("redirect_uri", process.env.ANNICT_REDIRECT_URL);
+    form.append("redirect_uri", redirectUrl());
     form.append("code", code);
     const json = await fetch('https://annict.com/oauth/token', {
         method: 'POST',
